@@ -1,0 +1,155 @@
+import turtle #importing turtle to draw boxes
+import random 
+import time  # used for time taken by player to solve the game
+t=turtle.Turtle()# this is act as a pen
+t.speed(0) 
+t.pensize(10) # size of pen to draw the box
+t.penup()
+screen=turtle.Screen()
+screen.tracer(0) # Due to this it directly represent the formed boxes
+colors = [
+    "red", "green", "blue", "orange",
+    "purple", "cyan", "yellow", "pink",
+    "brown", "violet", "lime", "gold",
+    "indigo", "coral", "teal", "white"]  # last is empty box
+easy_level   = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,'']
+medium_level = [1,2,3,4,5,6,7,8,9,10,11,13,12,14,15,'']
+hard_level   = [5,1,2,4,6,3,7,8,9,10,11,12,13,14,15,'']
+choice= screen.textinput("choice level","Type: easy/medium/hard/random")
+def init_board():
+ global num,empty_index   # Here we select the level of the game
+ if choice=="easy":
+    num=easy_level[:]
+ if choice=="medium":
+    num=medium_level[:]
+ if choice=="hard":
+    num=hard_level[:]
+ if choice=="random":
+    til=list(range(1,16))
+    random.shuffle(til)
+    til.append('')
+    num=til
+ empty_index=num.index('')
+init_board()
+start_time=time.time()
+index=0
+def draw_board():
+ index=0
+ for row in range(4):
+    for col in range(4):
+        x= -200+100*col
+        y= 200-100*row
+        t.goto(x,y)
+        t.pendown()       #Here we form all of the boxes
+        t.begin_fill()
+        t.fillcolor(colors[index])
+        for i in range(4):
+         t.forward(100)
+         t.right(90)
+        t.end_fill()
+        t.penup()
+        t.goto(x+50,y-70)   # Here we write the number in the boxes
+        t.write(num[index], align='center',font=('Arial',20,'bold'))
+        index += 1
+draw_board()
+t.hideturtle()
+empty_index=num.index('')# finding the position of empty box
+def write_number(index): # Used to write number in empty box during game
+    if num[index]!='':
+        row,col= divmod(index,4)
+        x=-200+col*100+50
+        y= 200-row*100-70
+        t.penup()
+        t.goto(x,y)
+        t.write(num[index], align='center',font=('Arial',20,'bold'))
+score=0
+t1=turtle.Turtle()
+t1.penup()
+t1.goto(-100,250)
+def update_score():
+    t1.clear()
+    t1.write(f"moves : {score}",align="center", font=("Arial",30,"bold"))
+update_score()       
+def erase_number(index): # Erase the number from its old position 
+    row,col=divmod(index,4)
+    x=-200+col*100
+    y= 200-row*100
+    t.penup()
+    t.goto(x,y)
+    t.pendown()
+    t.begin_fill()
+    t.fillcolor(colors[index])
+    for i in range(4):
+        t.forward(100)
+        t.right(90)
+    t.end_fill()
+    t.penup()
+solved=[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,'']
+def win(): # Defining our wining state
+    if num==solved:
+        total_time=int(time.time()-start_time) # calculate the total time taken by player to play this game
+        min,sec= divmod(total_time,60)
+        d=turtle.Turtle()
+        d.hideturtle()
+        d.penup()
+        d.goto(0,-300)
+        d.write(f"YOU WON !! Moves:{score} & Time: {min:02}:{sec:02}",align="center",font=("Arial",30,"bold"))
+        print(f"Difficulty level:{choice}")
+        print("Check points of the game is:")
+        for step in player_moves:
+         print(step)
+        screen.onkey(None,"Up") # These represent after winning the game no keys work
+        screen.onkey(None,"Down")
+        screen.onkey(None,"Right")
+        screen.onkey(None,"Left")    
+player_moves=[]
+def swap(new_index): # due to this function i can interchange the number on new index and empty_index
+    global empty_index
+    global score
+    if 0<=new_index<16  and num[new_index]!= '' :
+        player_moves.append(num[:])
+        erase_number(empty_index)
+        erase_number(new_index)
+        num[empty_index]=num[new_index]
+        num[new_index]=''
+        write_number(empty_index)
+        empty_index=new_index # Update empty box location
+        score +=1
+        update_score()
+        win()
+def move_up():
+    if empty_index+4<16:
+        swap(empty_index+4)       
+def move_down():
+    if empty_index-4>=0:
+        swap(empty_index-4)
+def move_right():
+    if empty_index%4!=0:
+        swap(empty_index-1)
+def move_left():
+    if empty_index%4!=3:
+        swap(empty_index+1)       
+def restart():   # This is used to restart game during playing
+    global start_time,player_moves,score
+    score=0
+    start_time=time.time()
+    player_moves=[]
+    init_board()  # Reset numbers and empty cell
+    draw_board()
+    update_score()
+t.penup()
+t.goto(200,250)
+t.write(" For restart press a",align="center",font=("Arial",15,"bold"))
+t.penup()
+t.goto(-340,230)
+t.write(f"Difficulty: {choice}", font=("Arial",15,"bold"))
+screen.bgcolor("lightpink")
+screen.listen()
+screen.onkey(move_up, "Up")
+screen.onkey(move_down, "Down")
+screen.onkey(move_left, "Left")
+screen.onkey(move_right, "Right")
+screen.onkey(restart,"a")
+turtle.done()      
+
+
